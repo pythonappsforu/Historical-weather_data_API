@@ -12,7 +12,7 @@ def home():
     return render_template('home.html',data=stations.to_html())
 
 @app.route('/api/v1/<station>/<date>')
-def search_word(station,date):
+def search_station(station,date):
     filename = "data_small" + "\TG_STAID"+ station.zfill(6)+".txt"
     df = pd.read_csv(filename,skiprows=20,parse_dates=['    DATE'])
     temp = df.loc[df['    DATE']==date]['   TG'].squeeze()/10
@@ -22,6 +22,22 @@ def search_word(station,date):
         "date":date
     }
     return station_temp
+
+@app.route('/api/v1/<station>')
+def station_data(station):
+    filename = "data_small" + "\TG_STAID"+ station.zfill(6)+".txt"
+    station_temp = pd.read_csv(filename,skiprows=20,parse_dates=['    DATE'])
+
+    return station_temp.to_dict(orient='records')
+
+
+@app.route('/api/v1/yearly/<station>/<year>')
+def yearly_data(station,year):
+    filename = "data_small" + "\TG_STAID"+ station.zfill(6)+".txt"
+    df = pd.read_csv(filename,skiprows=20)
+    df['    DATE'] = df['    DATE'].astype(str)
+    station_temp = df[df['    DATE'].str.startswith(year)]
+    return station_temp.to_dict(orient='records')
 
 
 if __name__ == "__main__":
